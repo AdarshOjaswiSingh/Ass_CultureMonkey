@@ -1,27 +1,21 @@
 import streamlit as st
-import spacy
-import subprocess
+import requests
 
-# Try loading model, or download if not present
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-    nlp = spacy.load("en_core_web_sm")
-
-st.set_page_config(page_title="Skill Trend Detector")
-st.title("🧠 Skill Trend Detector")
+st.title("Skill Trend Detector")
 
 description = st.text_area("Paste Job Description")
 
 if st.button("Analyze"):
-    if description.strip():
-        doc = nlp(description)
-        keywords = [ent.text for ent in doc.ents if ent.label_ in ["ORG", "PRODUCT", "WORK_OF_ART", "PERSON"]]
-        if keywords:
-            st.success("Detected Skills/Keywords:")
-            st.write(keywords)
-        else:
-            st.info("No keywords found.")
+    if description:
+        # Update this with your deployed API endpoint if needed
+        api_url = "https://your-api-url/skill-trend"
+        try:
+            response = requests.post(api_url, json={"job_description": description})
+            if response.status_code == 200:
+                st.json(response.json())
+            else:
+                st.error("API Error: " + str(response.status_code))
+        except Exception as e:
+            st.error(f"Request failed: {e}")
     else:
-        st.warning("Please enter a description first.")
+        st.warning("Please enter a description")
